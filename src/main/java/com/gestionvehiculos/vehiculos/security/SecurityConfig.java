@@ -48,14 +48,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // Permitir acceso a archivos estáticos y login
+                        .requestMatchers("/", "/index.html", "/login.html", "/css/**", "/js/**", "/images/**").permitAll()
+
                         // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
 
-                        // Endpoints temporalmente públicos para desarrollo
+                        // Temporalmente públicos para desarrollo -- tengo que quitarlos después
                         .requestMatchers("/api/documentos/**").permitAll()
                         .requestMatchers("/api/personas/**").permitAll()
                         .requestMatchers("/api/vehiculos/**").permitAll()
+                        .requestMatchers("/api/vehiculo-documentos/**").permitAll()
+                        .requestMatchers("/api/vehiculo-conductores/**").permitAll()
 
                         // Endpoints de trayectos - REQUIEREN AUTENTICACIÓN
                         .requestMatchers("/api/trayectos/**").authenticated()

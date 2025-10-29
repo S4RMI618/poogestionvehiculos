@@ -8,6 +8,7 @@ import com.gestionvehiculos.vehiculos.model.VehiculoConductor;
 import com.gestionvehiculos.vehiculos.model.VehiculoDocumento;
 import com.gestionvehiculos.vehiculos.repository.VehiculoConductorRepository;
 import com.gestionvehiculos.vehiculos.repository.VehiculoDocumentoRepository;
+import com.gestionvehiculos.vehiculos.service.GoogleMapsService;
 import com.gestionvehiculos.vehiculos.service.PersonaService;
 import com.gestionvehiculos.vehiculos.services.TrayectoService;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TareasProgramadasService {
@@ -35,6 +37,9 @@ public class TareasProgramadasService {
 
     @Autowired
     private TrayectoService trayectoService;
+
+    @Autowired
+    private GoogleMapsService googleMapsService;
 
     /**
      * Tarea programada que verifica cada 2 minutos las licencias vencidas
@@ -71,7 +76,7 @@ public class TareasProgramadasService {
                                 conductor.getApellidos(),
                                 relacion.getVehiculo().getPlaca());
 
-                        // TODO: Enviar correo electrónico al conductor
+                        // TODO: Enviar correo electrónico al conductor (CEREZA opcional)
                     }
                 }
             }
@@ -121,14 +126,20 @@ public class TareasProgramadasService {
 
     /**
      * Tarea programada que verifica cada 90 segundos los trayectos sin coordenadas
-     * y las obtiene usando Google Maps API que no pudimos accedder
-
+     * y las obtiene usando Google Maps API
+     */
     @Scheduled(fixedRate = 90000) // 90 segundos = 90000 ms
     @Transactional
     public void verificarTrayectosSinCoordenadas() {
         logger.info("Iniciando verificación de trayectos sin coordenadas...");
 
         try {
+            // Verificar configuración de Google Maps
+            if (!googleMapsService.verificarConfiguracion()) {
+                logger.warn("Google Maps API no está configurada. Se omite la tarea.");
+                return;
+            }
+
             List<Trayecto> trayectosSinCoordenadas = trayectoService.obtenerTrayectosSinCoordenadas();
 
             if (trayectosSinCoordenadas.isEmpty()) {
@@ -136,35 +147,56 @@ public class TareasProgramadasService {
                 return;
             }
 
+            logger.info("Se encontraron {} trayectos sin coordenadas", trayectosSinCoordenadas.size());
             int trayectosActualizados = 0;
+            int trayectosConError = 0;
 
             for (Trayecto trayecto : trayectosSinCoordenadas) {
                 try {
-                    // TODO: Implementar integración con Google Maps API
-                    // Por ahora, asignar coordenadas de ejemplo (Ibagué, Tolima)
-                    Double latitud = 4.4389 + (Math.random() * 0.1); // Ejemplo
-                    Double longitud = -75.2322 + (Math.random() * 0.1); // Ejemplo
+                    // Obtener coordenadas desde Google Maps
+                    Map<String, Double> coordenadas = googleMapsService.obtenerCoordenadas(
+                            trayecto.getUbicacion()
+                    );
 
-                    trayectoService.actualizarCoordenadas(trayecto.getId(), latitud, longitud);
-                    trayectosActualizados++;
+                    if (coordenadas != null) {
+                        Double latitud = coordenadas.get("latitud");
+                        Double longitud = coordenadas.get("longitud");
 
-                    logger.info("Coordenadas actualizadas para trayecto {} en ubicación: {}",
-                            trayecto.getId(),
-                            trayecto.getUbicacion());
+                        trayectoService.actualizarCoordenadas(trayecto.getId(), latitud, longitud);
+                        trayectosActualizados++;
 
+                        logger.info("✅ Trayecto {} actualizado - Ubicación: {} | Coordenadas: ({}, {})",
+                                trayecto.getId(),
+                                trayecto.getUbicacion(),
+                                latitud,
+                                longitud);
+                    } else {
+                        trayectosConError++;
+                        logger.warn("❌ No se pudieron obtener coordenadas para: {}",
+                                trayecto.getUbicacion());
+                    }
+
+                    // Pequeña pausa para no exceder límites de la API
+                    Thread.sleep(200); // 200ms entre peticiones
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.error("Tarea interrumpida");
+                    break;
                 } catch (Exception e) {
+                    trayectosConError++;
                     logger.error("Error al actualizar coordenadas del trayecto {}: {}",
                             trayecto.getId(),
                             e.getMessage());
                 }
             }
 
-            logger.info("Verificación completada. {} trayectos actualizados con coordenadas",
-                    trayectosActualizados);
+            logger.info("Verificación completada. ✅ {} actualizados | ❌ {} con errores",
+                    trayectosActualizados,
+                    trayectosConError);
 
         } catch (Exception e) {
-            logger.error("Error al verificar trayectos sin coordenadas: {}", e.getMessage());
+            logger.error("Error general al verificar trayectos sin coordenadas: {}", e.getMessage());
         }
     }
-     */
 }

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Rutas - Visualizador</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <header class="header">
+        <h1>🚗 Sistema de Gestión de Rutas</h1>
+        <p>Visualiza los trayectos y paradas de tus rutas</p>
+    </header>
+
+    <!-- Sección de búsqueda -->
+    <section class="search-section">
+        <div class="search-box">
+            <label for="codigoRuta">Código de Ruta:</label>
+            <input
+                    type="text"
+                    id="codigoRuta"
+                    placeholder="Ej: RUTA-IBAGUE-01"
+                    class="input-field"
+            >
+            <button onclick="buscarRuta()" class="btn-primary">
+                🔍 Buscar Ruta
+            </button>
+        </div>
+    </section>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Cargando ruta...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message hidden"></div>
+
+    <!-- Información de la Ruta -->
+    <section id="rutaInfo" class="ruta-info hidden">
+        <div class="info-card">
+            <h2>📍 Información de la Ruta</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Código de Ruta:</span>
+                    <span id="rutaCodigo" class="value"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Conductor:</span>
+                    <span id="rutaConductor" class="value"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Vehículo (Placa):</span>
+                    <span id="rutaVehiculo" class="value"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Total de Paradas:</span>
+                    <span id="totalParadas" class="value"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mapa -->
+    <section id="mapSection" class="map-section hidden">
+        <h2>🗺️ Mapa de Ruta</h2>
+        <div id="map"></div>
+        <!-- Panel de Instrucciones -->
+        <div id="panelInstrucciones" class="panel-instrucciones hidden">
+            <h3>📋 Instrucciones de Ruta</h3>
+            <div id="instruccionesLista"></div>
+        </div>
+    </section>
+
+    <!-- Lista de Trayectos -->
+    <section id="trayectosSection" class="trayectos-section hidden">
+        <h2>📋 Paradas del Trayecto</h2>
+        <div id="trayectosList" class="trayectos-list"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Sistema de Gestión de Vehículos CIPAS H,L,J,E - 2025</p>
+    </footer>
+</div>
+F
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClcsXw91DZWSTpWuNYj9Jwfya6IRq6BMI"></script>
+
+<!-- JavaScript -->
+<script src="js/app.js"></script>
+</body>
+</html>
