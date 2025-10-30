@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva de Trayectos</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .file-upload-input {
+            display: none;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 40px;
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .file-upload-label:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+
+        .file-upload-label.drag-over {
+            background: #e7e9fc;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e7e9fc;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .resultado-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .resultado-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .estado-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .estado-procesado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .estado-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .estado-validado {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .estado-cargado {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .tabla-registros {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .tabla-registros th,
+        .tabla-registros td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tabla-registros th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .tabla-registros tr:hover {
+            background: #f8f9fa;
+        }
+
+        .observacion-cell {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .observacion-cell:hover {
+            white-space: normal;
+            overflow: visible;
+        }
+
+        .btn-secondary {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 600;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <header class="header">
+        <h1>📤 Carga Masiva de Trayectos</h1>
+        <p>Sube tu archivo Excel para cargar múltiples trayectos</p>
+        <div class="nav-links">
+            <a href="index.html">← Volver al Mapa</a>
+            <a href="#" onclick="cerrarSesion()">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    <!-- Sección de carga -->
+    <section class="upload-section">
+        <h2>📁 Seleccionar Archivo Excel</h2>
+        <p style="color: #666; margin-bottom: 20px;">
+            Formatos aceptados: .xlsx, .xls | Tamaño máximo: 10MB
+        </p>
+
+        <div class="file-upload-wrapper">
+            <input
+                    type="file"
+                    id="fileInput"
+                    class="file-upload-input"
+                    accept=".xlsx,.xls"
+                    onchange="archivoSeleccionado()"
+            >
+            <label for="fileInput" class="file-upload-label" id="fileLabel">
+                <span style="font-size: 3rem;">📄</span>
+                <div>
+                    <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 5px;">
+                        Click para seleccionar o arrastra el archivo aquí
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666;">
+                        Archivo Excel con trayectos
+                    </div>
+                </div>
+            </label>
+        </div>
+
+        <div id="fileInfo" class="file-info">
+            <strong>📎 Archivo seleccionado:</strong>
+            <div id="fileName" style="margin-top: 5px;"></div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="subirArchivo()" class="btn-primary" id="btnSubir" disabled>
+                📤 Subir y Procesar Archivo
+            </button>
+            <button onclick="limpiarSeleccion()" class="btn-secondary">
+                🗑️ Limpiar
+            </button>
+            <a href="plantilla_trayectos.xlsx" download class="btn-secondary" style="display: inline-flex; align-items: center; text-decoration: none;">
+                📥 Descargar Plantilla
+            </a>
+        </div>
+    </section>
+
+    <!-- Loading -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Procesando archivo...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div id="errorMessage" class="error-message hidden"></div>
+
+    <!-- Resultado del cargue -->
+    <section id="resultadoSection" class="upload-section hidden">
+        <h2>📊 Resultado del Cargue</h2>
+        <div id="resultadoContent"></div>
+    </section>
+
+    <!-- Lista de cargues anteriores -->
+    <section id="carguesSection" class="upload-section">
+        <h2>📋 Cargues Realizados</h2>
+        <button onclick="cargarListaCargues()" class="btn-secondary">
+            🔄 Actualizar Lista
+        </button>
+        <div id="listaCargues" style="margin-top: 20px;"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Sistema de Gestión de Vehículos - 2024</p>
+    </footer>
+</div>
+
+<script src="js/cargue.js"></script>
+</body>
+</html>

@@ -49,7 +49,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Permitir acceso a archivos estáticos y login
-                        .requestMatchers("/", "/index.html", "/login.html", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/login.html", "/cargue.html", "/css/**", "/js/**", "/images/**").permitAll()
 
                         // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
@@ -64,6 +64,8 @@ public class SecurityConfig {
 
                         // Endpoints de trayectos - REQUIEREN AUTENTICACIÓN
                         .requestMatchers("/api/trayectos/**").authenticated()
+                        // Endpoints de cargue - REQUIEREN AUTENTICACIÓN
+                        .requestMatchers("/api/cargue/**").authenticated()
 
                         // Todos los demás requieren autenticación
                         .anyRequest().authenticated()
