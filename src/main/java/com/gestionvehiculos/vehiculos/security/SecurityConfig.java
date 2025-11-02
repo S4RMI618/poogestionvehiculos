@@ -50,7 +50,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Permitir acceso a archivos estáticos y login
                         .requestMatchers("/", "/index.html", "/login.html", "/cargue.html", "/css/**", "/js/**", "/images/**").permitAll()
-
+                        // ✅ Swagger
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
                         // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
