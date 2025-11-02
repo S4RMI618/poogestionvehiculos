@@ -209,6 +209,49 @@ public class VehiculoService {
         return resultado;
     }
 
+    /**
+     * Agregar documentos a un vehículo existente
+     */
+    public Vehiculo agregarDocumentos(Long vehiculoId, List<VehiculoDocumentoDTO> documentosDTO) {
+        // Verificar que el vehículo existe
+        Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId)
+                .orElseThrow(() -> new RuntimeException("Vehículo no encontrado con ID: " + vehiculoId));
+
+        // Validar que se envíen documentos
+        if (documentosDTO == null || documentosDTO.isEmpty()) {
+            throw new RuntimeException("Debe enviar al menos un documento");
+        }
+
+        // Agregar cada documento
+        for (VehiculoDocumentoDTO docDTO : documentosDTO) {
+            // Validar que el documento existe
+            Documento documento = documentoRepository.findById(docDTO.getDocumentoId())
+                    .orElseThrow(() -> new RuntimeException("Documento no encontrado con ID: " + docDTO.getDocumentoId()));
+
+            // Verificar si el documento ya está asociado al vehículo
+            boolean yaExiste = vehiculoDocumentoRepository
+                    .findByVehiculoIdAndDocumentoId(vehiculoId, docDTO.getDocumentoId())
+                    .isPresent();
+
+            if (yaExiste) {
+                throw new RuntimeException("El documento " + documento.getNombre() + " ya está asociado a este vehículo");
+            }
+
+            // Crear la asociación
+            VehiculoDocumento vehiculoDocumento = new VehiculoDocumento();
+            vehiculoDocumento.setVehiculo(vehiculo);
+            vehiculoDocumento.setDocumento(documento);
+            vehiculoDocumento.setFechaExpedicion(docDTO.getFechaExpedicion());
+            vehiculoDocumento.setFechaVencimiento(docDTO.getFechaVencimiento());
+            vehiculoDocumento.setEstado(EstadoDocumento.HABILITADO); // Por defecto habilitado
+
+            vehiculoDocumentoRepository.save(vehiculoDocumento);
+        }
+
+        // Retornar el vehículo actualizado
+        return vehiculoRepository.findById(vehiculoId).orElseThrow();
+    }
+
     // Método auxiliar para convertir VehiculoConductor a DTO
     private VehiculoConductorDTO convertirVehiculoConductoraDTO(VehiculoConductor vc) {
         String conductorNombre = vc.getConductor().getNombres() + " " + vc.getConductor().getApellidos();

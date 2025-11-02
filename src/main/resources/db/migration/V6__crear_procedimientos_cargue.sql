@@ -1,5 +1,6 @@
 -- ==========================================================
 -- PROCEDIMIENTOS ALMACENADOS PARA CARGUE MASIVO DE TRAYECTOS
+-- VERSIÓN CORREGIDA - Fix para error "Out of range value"
 -- ==========================================================
 
 -- Eliminar procedimientos si existen
@@ -43,6 +44,7 @@ DELIMITER ;
 -- ===============================================================
 -- PROCEDIMIENTO 2: VALIDACIÓN
 -- Validar TODOS los registros y marcarlos como VALIDADO o ERROR
+-- CORREGIDO: DECIMAL(12,8) en lugar de DECIMAL(10,8) y DECIMAL(11,8)
 -- ===============================================================
 DELIMITER //
 
@@ -174,6 +176,7 @@ BEGIN
     AND longitud NOT REGEXP '^-?[0-9]+\.?[0-9]*$';
 
     -- Validar rangos de latitud
+    -- CORREGIDO: DECIMAL(12,8) en lugar de DECIMAL(10,8)
     UPDATE trayectos_tmp
     SET
         estado = 'ERROR',
@@ -187,9 +190,10 @@ BEGIN
     AND latitud IS NOT NULL
     AND latitud != ''
     AND latitud REGEXP '^-?[0-9]+\.?[0-9]*$'
-    AND (CAST(latitud AS DECIMAL(10,8)) < -90 OR CAST(latitud AS DECIMAL(10,8)) > 90);
+    AND (CAST(latitud AS DECIMAL(12,8)) < -90 OR CAST(latitud AS DECIMAL(12,8)) > 90);
 
     -- Validar rangos de longitud
+    -- CORREGIDO: DECIMAL(12,8) en lugar de DECIMAL(11,8)
     UPDATE trayectos_tmp
     SET
         estado = 'ERROR',
@@ -203,7 +207,7 @@ BEGIN
     AND longitud IS NOT NULL
     AND longitud != ''
     AND longitud REGEXP '^-?[0-9]+\.?[0-9]*$'
-    AND (CAST(longitud AS DECIMAL(11,8)) < -180 OR CAST(longitud AS DECIMAL(11,8)) > 180);
+    AND (CAST(longitud AS DECIMAL(12,8)) < -180 OR CAST(longitud AS DECIMAL(12,8)) > 180);
 
     -- ===========================================
     -- VALIDACIÓN 5: Existencia de conductor
@@ -287,7 +291,7 @@ BEGIN
     -- ===========================================
     UPDATE trayectos_tmp t
     LEFT JOIN vehiculo_conductores vc ON
-        vc.conductor_id = CAST(t.conductor_id AS UNSIGNED) AND
+        vc.persona_id = CAST(t.conductor_id AS UNSIGNED) AND
         vc.vehiculo_id = CAST(t.vehiculo_id AS UNSIGNED) AND
         vc.estado = 'PO'
     SET
@@ -375,7 +379,7 @@ BEGIN
 
         -- Insertar registros validados en la tabla trayectos
         INSERT INTO trayectos (
-            conductor_id,
+            persona_id,
             vehiculo_id,
             codigo_ruta,
             ubicacion,
@@ -430,5 +434,4 @@ BEGIN
 END //
 
 DELIMITER ;
-
--- ============================================================================
+====================================================================

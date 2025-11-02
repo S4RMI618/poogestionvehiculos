@@ -22,11 +22,11 @@ public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
 
     @Query("SELECT DISTINCT v FROM Vehiculo v JOIN v.documentos vd WHERE vd.documento.id = :documentoId")
     List<Vehiculo> findByDocumentoId(@Param("documentoId") Long documentoId);
-    /*Nuevo*/
+
     @Query("SELECT DISTINCT v FROM Vehiculo v JOIN v.documentos vd WHERE vd.fechaVencimiento < CURRENT_DATE")
     List<Vehiculo> findVehiculosConDocumentosVencidos();
 
     @Query("SELECT DISTINCT v FROM Vehiculo v JOIN v.documentos vd WHERE vd.fechaVencimiento BETWEEN CURRENT_DATE AND :fechaLimite")
     List<Vehiculo> findVehiculosConDocumentosPorVencer(@Param("fechaLimite") LocalDate fechaLimite);
-    /*Hasta aquí*/
+
 }

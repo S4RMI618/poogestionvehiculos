@@ -3,6 +3,7 @@ package com.gestionvehiculos.vehiculos.controller;
 import com.gestionvehiculos.vehiculos.dto.AsociarConductorRequest;
 import com.gestionvehiculos.vehiculos.dto.VehiculoConductorDTO;
 import com.gestionvehiculos.vehiculos.enums.EstadoConductor;
+import com.gestionvehiculos.vehiculos.model.Persona;
 import com.gestionvehiculos.vehiculos.service.VehiculoConductorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,11 @@ public class VehiculoConductorController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+    @GetMapping("/conductores-operativos")
+    public ResponseEntity<List<Persona>> obtenerConductoresQuePuedenOperar() {
+        List<Persona> conductores = vehiculoConductorService.obtenerConductoresQuePuedenOperar();
+        return new ResponseEntity<>(conductores, HttpStatus.OK);
     }
 
     // Obtener conductores de un vehículo
@@ -55,4 +61,5 @@ public class VehiculoConductorController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
 }
